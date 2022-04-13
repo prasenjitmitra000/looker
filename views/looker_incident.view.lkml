@@ -108,7 +108,7 @@ view: looker_incident {
 
   dimension: is_closed {
     type: string
-    sql: ${TABLE}.IS_CLOSED ;;
+    sql: CAST(${TABLE}.IS_CLOSED as string) ;;
   }
 
   dimension: is_escalated {
@@ -218,6 +218,14 @@ view: looker_incident {
 
   }
 
+
+  measure: open_case {
+    label: "Open case"
+    type: count
+    value_format_name: decimal_0
+    drill_fields: [inc_no,is_closed,created_raw]
+
+  }
 
   dimension: Tab_links3 {
     type: string
