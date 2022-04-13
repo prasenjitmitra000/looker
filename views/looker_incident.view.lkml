@@ -108,11 +108,7 @@ view: looker_incident {
 
   dimension: is_closed {
     type: string
-<<<<<<< HEAD
-    sql: CAST(${TABLE}.IS_CLOSED as string) ;;
-=======
     sql: CAST(${TABLE}.IS_CLOSED as string);;
->>>>>>> branch 'master' of https://github.com/prasenjitmitra000/looker.git
   }
 
   dimension: is_escalated {
