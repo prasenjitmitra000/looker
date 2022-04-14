@@ -3,6 +3,7 @@ view: looker_incident {
     ;;
 
   dimension: inc_no {
+    label:"Incident"
     type: string
     primary_key: yes
     sql: ${TABLE}.inc_no ;;
@@ -38,6 +39,10 @@ view: looker_incident {
     sql: ${TABLE}.CLOSED_DATE ;;
   }
 
+  dimension: year {
+    type: number
+    sql: ${created_year} ;;
+  }
   dimension: contract_customer_id {
     type: string
     sql: ${TABLE}.CONTRACT_CUSTOMER_ID ;;
@@ -51,7 +56,10 @@ view: looker_incident {
   dimension: country {
     type: string
     map_layer_name: countries
-    sql: ${TABLE}.COUNTRY ;;
+    sql: case when ${TABLE}.COUNTRY='UK' then 'United Kingdom'
+              when ${TABLE}.COUNTRY='UAE' then 'United Arab Emirates'
+              when ${TABLE}.COUNTRY='Hong Kong' then 'China'
+              else ${TABLE}.COUNTRY end;;
   }
 
   dimension_group: created {
@@ -75,8 +83,8 @@ view: looker_incident {
   }
 
   dimension: customer_feedback_rating {
-    type: string
-    sql: ${TABLE}.CUSTOMER_FEEDBACK_RATING ;;
+    type: number
+    sql: cast(${TABLE}.CUSTOMER_FEEDBACK_RATING as int) ;;
   }
 
   dimension: customer_segment {
@@ -175,11 +183,14 @@ view: looker_incident {
   measure: count {
     type: count
     drill_fields: [detail*]
+
   }
 
   measure: total_inc {
     type: count_distinct
+    label: "Incident"
     sql: ${inc_no} ;;
+    html: @{big_number_format} ;;
   }
 
   set: detail {
@@ -243,6 +254,26 @@ view: looker_incident {
     value_format_name: decimal_0
     drill_fields: [inc_no,is_closed,created_raw]
 
+  }
+
+  measure: avg_feedback_rating {
+    label: "Avg. Customer Rating"
+    type: average
+    value_format_name: decimal_2
+    sql: ${customer_feedback_rating} ;;
+
+  }
+
+  measure: open_inc {
+    label: "Open Incident"
+    type: sum
+    sql: case when ${status} not in ('Closed','Resolved') then 1 else 0 end ;;
+  }
+
+  measure: close_inc {
+    label: "Close Incident"
+    type: sum
+    sql: case when ${status} in ('Closed','Resolved') then 1 else 0 end ;;
   }
 
   dimension: Tab_links3 {
