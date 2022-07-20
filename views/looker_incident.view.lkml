@@ -55,6 +55,7 @@ view: looker_incident {
 
   dimension: country {
     type: string
+    label: "Country"
     map_layer_name: countries
     sql: case when ${TABLE}.COUNTRY='UK' then 'United Kingdom'
               when ${TABLE}.COUNTRY='UAE' then 'United Arab Emirates'
@@ -77,10 +78,22 @@ view: looker_incident {
     sql: ${TABLE}.CREATED_DATE ;;
   }
 
+  dimension: created_date_val {
+    type: string
+    label: "Created Date"
+    #sql: FORMAT_DATE('%m-%d-%Y', PARSE_DATE('%Y-%m-%d', Substring(cast(CREATED_DATE as string),0,10))) ;;
+    sql: case when upper(${country}) = 'USA' then FORMAT_DATE('%m-%d-%Y', PARSE_DATE('%Y-%m-%d', Substring(cast(CREATED_DATE as string),0,10)))
+              when upper(${country}) = 'INDIA' then FORMAT_DATE('%d-%m-%Y', PARSE_DATE('%Y-%m-%d', Substring(cast(CREATED_DATE as string),0,10)))
+              else FORMAT_DATE('%m-%d-%Y', PARSE_DATE('%Y-%m-%d', Substring(cast(CREATED_DATE as string),0,10)))
+              end;;
+
+  }
   dimension: customer_feedback_comment {
     type: string
     sql: ${TABLE}.CUSTOMER_FEEDBACK_COMMENT ;;
   }
+
+
 
   dimension: customer_feedback_rating {
     type: number
@@ -93,6 +106,7 @@ view: looker_incident {
   }
 
   dimension: description {
+    label: "Description"
     type: string
     sql: ${TABLE}.DESCRIPTION ;;
   }
@@ -124,6 +138,17 @@ view: looker_incident {
     sql: CAST(${TABLE}.IS_ESCALATED as string)  ;;
   }
 
+#  dimension: escalated {
+#    type: yesno
+#    sql: ${is_escalated} = 'true'  ;;
+#    html:
+#    {% if value = "Yes"  %}
+#    <p style="color: black; background-color: green; font-size:100%; text-align:center">{{ value }}</p>
+#    {% else %}
+#    <p style="color: black; background-color: red; font-size:100%; text-align:center">{{ value }}</p>
+#    {% endif %};;
+#  }
+
   dimension: is_nurtured {
     type: string
     sql: ${TABLE}.IS_NURTURED ;;
@@ -150,6 +175,7 @@ view: looker_incident {
   }
 
   dimension: status {
+    label:"Status"
     type: string
     sql: ${TABLE}.STATUS ;;
   }
@@ -180,9 +206,14 @@ view: looker_incident {
 
   }
 
+  dimension: project_name {
+    type: string
+    sql: ${TABLE}.PROJECT_NAME ;;
+  }
+
   measure: count {
     type: count
-    drill_fields: [detail*]
+    drill_fields: [inc_no,channel,description,created_raw,status,closed_raw,priority]
 
   }
 
@@ -191,6 +222,7 @@ view: looker_incident {
     label: "Incident"
     sql: ${inc_no} ;;
     html: @{big_number_format} ;;
+    drill_fields: [inc_no,channel,description,created_raw,status,closed_raw,priority]
   }
 
   set: detail {
@@ -246,6 +278,17 @@ view: looker_incident {
     label: "Volume by Channel"
     type: count
     drill_fields: [looker_incident.channel,volume_by_channel]
+    html:
+
+    {% if value > 300  %}
+
+    <p style="color: black; background-color: green; font-size:100%; text-align:center">{{ rendered_value }}</p>
+
+    {% else %}
+
+    <p style="color: black; background-color: red; font-size:100%; text-align:center">{{ rendered_value }}</p>
+
+    {% endif %};;
   }
 
   measure: open_case {
@@ -261,7 +304,7 @@ view: looker_incident {
     type: average
     value_format_name: decimal_2
     sql: ${customer_feedback_rating} ;;
-
+    drill_fields: [inc_no,channel,description,created_raw,status,closed_raw,priority]
   }
 
   measure: open_inc {

@@ -5,7 +5,10 @@ view: looker_office {
   dimension: country {
     type: string
     map_layer_name: countries
-    sql: ${TABLE}.COUNTRY ;;
+    sql: case when ${TABLE}.COUNTRY='UK' then 'United Kingdom'
+              when ${TABLE}.COUNTRY='UAE' then 'United Arab Emirates'
+              when ${TABLE}.COUNTRY='Hong Kong' then 'China'
+              else ${TABLE}.COUNTRY end;;
   }
 
   dimension: office_id {
@@ -35,10 +38,11 @@ view: looker_office {
   }
   measure: count {
     type: count
-    drill_fields: [office_name]
+
   }
   measure: total_office {
     type: count_distinct
     sql: ${office_id} ;;
+    drill_fields: [office_name,country,head_quarter]
   }
 }

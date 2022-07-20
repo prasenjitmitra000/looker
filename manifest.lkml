@@ -1,5 +1,10 @@
 project_name: "looker_one_project"
 
+#localization_settings: {
+#  localization_level: permissive
+#  default_locale: es_ES
+#}
+
 constant: big_number_format {
   value: "
   {% if value < 0 %}
