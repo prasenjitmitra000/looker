@@ -138,16 +138,16 @@ view: looker_incident {
     sql: CAST(${TABLE}.IS_ESCALATED as string)  ;;
   }
 
-#  dimension: escalated {
-#    type: yesno
-#    sql: ${is_escalated} = 'true'  ;;
-#    html:
-#    {% if value = "Yes"  %}
-#    <p style="color: black; background-color: green; font-size:100%; text-align:center">{{ value }}</p>
-#    {% else %}
-#    <p style="color: black; background-color: red; font-size:100%; text-align:center">{{ value }}</p>
-#    {% endif %};;
-#  }
+  dimension: escalated {
+    type: yesno
+    sql: ${is_escalated} = 'true'  ;;
+    html:
+    {% if value == "Yes"  %}
+    <p style="color: black; background-color: green; font-size:100%; text-align:center">{{ value }}</p>
+    {% else %}
+    <p style="color: black; background-color: red; font-size:100%; text-align:center">{{ value }}</p>
+    {% endif %};;
+  }
 
   dimension: is_nurtured {
     type: string
@@ -209,6 +209,7 @@ view: looker_incident {
   dimension: project_name {
     type: string
     sql: ${TABLE}.PROJECT_NAME ;;
+
   }
 
   measure: count {
