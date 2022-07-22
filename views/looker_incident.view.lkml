@@ -61,6 +61,7 @@ view: looker_incident {
               when ${TABLE}.COUNTRY='UAE' then 'United Arab Emirates'
               when ${TABLE}.COUNTRY='Hong Kong' then 'China'
               else ${TABLE}.COUNTRY end;;
+    drill_fields: [country,inc_no,is_closed,created_raw]
   }
 
   dimension_group: created {
@@ -226,6 +227,14 @@ view: looker_incident {
     drill_fields: [inc_no,channel,description,created_raw,status,closed_raw,priority]
   }
 
+  measure: total_inc_country {
+    type: count_distinct
+    label: "Incident"
+    sql: ${inc_no} ;;
+    #html: @{big_number_format} ;;
+    drill_fields: [inc_no,channel,description,created_raw,status,closed_raw,priority]
+  }
+
   set: detail {
     fields: [
       inc_no,created_date,priority,channel
@@ -237,7 +246,7 @@ view: looker_incident {
     sql: case when date_diff(${first_response_raw},${created_raw},MINUTE) >0 then date_diff(${first_response_raw},${created_raw},MINUTE) end  ;;
     value_format_name: decimal_0
     label: "Average First Response Time"
-    drill_fields: [looker_customer_care_user.country,Avg_first_response_time]
+    drill_fields: [country,inc_no,channel,description,created_raw,status,closed_raw,priority]
   }
 
   measure:Nurturing_Rate{
