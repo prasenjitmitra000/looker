@@ -61,7 +61,21 @@ view: looker_incident {
               when ${TABLE}.COUNTRY='UAE' then 'United Arab Emirates'
               when ${TABLE}.COUNTRY='Hong Kong' then 'China'
               else ${TABLE}.COUNTRY end;;
+    drill_fields: [city,inc_no,is_closed,created_raw]
+  }
+
+  dimension: region {
+    type: string
+    label: "Region"
+    sql: ${TABLE}.REGION;;
     drill_fields: [country,inc_no,is_closed,created_raw]
+  }
+
+  dimension: city {
+    type: string
+    label: "City"
+    sql: ${TABLE}.CITY;;
+    drill_fields: [inc_no,is_closed,created_raw]
   }
 
   dimension_group: created {
@@ -232,7 +246,7 @@ view: looker_incident {
     label: "Incident"
     sql: ${inc_no} ;;
     #html: @{big_number_format} ;;
-    drill_fields: [inc_no,channel,description,created_raw,status,closed_raw,priority]
+    drill_fields: [inc_no,channel,region,created_raw,status,closed_raw,priority]
   }
 
   set: detail {
