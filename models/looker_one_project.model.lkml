@@ -41,4 +41,5 @@ explore: looker_incident {
     relationship: one_to_many
   }
 }
+
 explore:  looker_customer {}

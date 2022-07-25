@@ -150,7 +150,7 @@ view: looker_incident {
 
   dimension: is_escalated {
     type: string
-    sql: CAST(${TABLE}.IS_ESCALATED as string)  ;;
+    sql: CAST(${TABLE}.IS_ESCALATED AS string) ;;
   }
 
   dimension: escalated {
@@ -215,15 +215,14 @@ view: looker_incident {
     sql: ${TABLE}.TRANSFER_REASON ;;
   }
 
-  dimension: feedback_rating_non_zero {
-    type: string
-    sql: case when ${customer_feedback_rating} is NOT NULL then ${customer_feedback_rating} end ;;
-
-  }
-
   dimension: project_name {
     type: string
     sql: ${TABLE}.PROJECT_NAME ;;
+  }
+
+  dimension: feedback_rating_non_zero {
+    type: string
+    sql: case when ${customer_feedback_rating} is NOT NULL then ${customer_feedback_rating} end ;;
 
   }
 

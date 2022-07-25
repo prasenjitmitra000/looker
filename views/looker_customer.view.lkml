@@ -47,8 +47,9 @@ view: looker_customer {
     drill_fields: [name]
   }
 
-  measure: total_customer {
-    type:  count
+  measure: total_customers{
+    type: count_distinct
+    sql: ${customer_id} ;;
     drill_fields: [name,country,office]
   }
 }
