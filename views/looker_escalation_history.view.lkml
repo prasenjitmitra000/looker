@@ -76,8 +76,15 @@ view: looker_escalation_history {
     type: count
     drill_fields: []
   }
+
   measure: total_esc {
     type: count_distinct
     sql: ${inc_no} ;;
+    }
+  measure: escalation_trend_by_channel {
+    label: "Escalation Trend by Channel"
+    type: count
+    sql: case when ${escalation_status} =true then 1 else 0 end ;;
+    value_format_name: decimal_0
   }
 }

@@ -8,11 +8,13 @@ datagroup: looker_one_project_default_datagroup {
   max_cache_age: "1 hour"
 }
 
+
+
 persist_with: looker_one_project_default_datagroup
 
 explore: looker_incident {
   label: "Incident Management"
-  view_label: "INC"
+  view_label: "Incident"
 
   join: looker_customer_care_user {
     view_label: "Customer Care User"
@@ -32,5 +34,12 @@ explore: looker_incident {
     sql_on: ${looker_office.office_id}=${looker_incident.office}  ;;
     relationship: one_to_many
   }
+  join: looker_customer {
+    view_label: "Looker Customer"
+    type: left_outer
+    sql_on: ${looker_customer.customer_id}=${looker_incident.contract_customer_id}  ;;
+    relationship: one_to_many
+  }
 }
-explore: looker_customer {}
+
+explore:  looker_customer {}

@@ -5,7 +5,10 @@ view: looker_customer {
   dimension: country {
     type: string
     map_layer_name: countries
-    sql: ${TABLE}.COUNTRY ;;
+    sql: case when ${TABLE}.COUNTRY='UK' then 'United Kingdom'
+              when ${TABLE}.COUNTRY='UAE' then 'United Arab Emirates'
+              when ${TABLE}.COUNTRY='Hong Kong' then 'China'
+              else ${TABLE}.COUNTRY end;;
   }
 
   dimension: cust_grp_id {
@@ -24,6 +27,7 @@ view: looker_customer {
   }
 
   dimension: name {
+    label: "Name"
     type: string
     sql: ${TABLE}.NAME ;;
   }
@@ -42,8 +46,10 @@ view: looker_customer {
     type: count
     drill_fields: [name]
   }
+
   measure: total_customers{
     type: count_distinct
     sql: ${customer_id} ;;
+    drill_fields: [name,country,office]
   }
 }

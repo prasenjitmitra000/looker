@@ -3,6 +3,7 @@ view: looker_incident {
     ;;
 
   dimension: inc_no {
+    label:"Incident"
     type: string
     primary_key: yes
     sql: ${TABLE}.inc_no ;;
@@ -38,6 +39,10 @@ view: looker_incident {
     sql: ${TABLE}.CLOSED_DATE ;;
   }
 
+  dimension: year {
+    type: number
+    sql: ${created_year} ;;
+  }
   dimension: contract_customer_id {
     type: string
     sql: ${TABLE}.CONTRACT_CUSTOMER_ID ;;
@@ -50,8 +55,13 @@ view: looker_incident {
 
   dimension: country {
     type: string
+    label: "Country"
     map_layer_name: countries
-    sql: ${TABLE}.COUNTRY ;;
+    sql: case when ${TABLE}.COUNTRY='UK' then 'United Kingdom'
+              when ${TABLE}.COUNTRY='UAE' then 'United Arab Emirates'
+              when ${TABLE}.COUNTRY='Hong Kong' then 'China'
+              else ${TABLE}.COUNTRY end;;
+    drill_fields: [country,inc_no,is_closed,created_raw]
   }
 
   dimension_group: created {
@@ -69,14 +79,26 @@ view: looker_incident {
     sql: ${TABLE}.CREATED_DATE ;;
   }
 
+  dimension: created_date_val {
+    type: string
+    label: "Created Date"
+    #sql: FORMAT_DATE('%m-%d-%Y', PARSE_DATE('%Y-%m-%d', Substring(cast(CREATED_DATE as string),0,10))) ;;
+    sql: case when upper(${country}) = 'USA' then FORMAT_DATE('%m-%d-%Y', PARSE_DATE('%Y-%m-%d', Substring(cast(CREATED_DATE as string),0,10)))
+              when upper(${country}) = 'INDIA' then FORMAT_DATE('%d-%m-%Y', PARSE_DATE('%Y-%m-%d', Substring(cast(CREATED_DATE as string),0,10)))
+              else FORMAT_DATE('%m-%d-%Y', PARSE_DATE('%Y-%m-%d', Substring(cast(CREATED_DATE as string),0,10)))
+              end;;
+
+  }
   dimension: customer_feedback_comment {
     type: string
     sql: ${TABLE}.CUSTOMER_FEEDBACK_COMMENT ;;
   }
 
+
+
   dimension: customer_feedback_rating {
-    type: string
-    sql: ${TABLE}.CUSTOMER_FEEDBACK_RATING ;;
+    type: number
+    sql: cast(${TABLE}.CUSTOMER_FEEDBACK_RATING as int) ;;
   }
 
   dimension: customer_segment {
@@ -85,6 +107,7 @@ view: looker_incident {
   }
 
   dimension: description {
+    label: "Description"
     type: string
     sql: ${TABLE}.DESCRIPTION ;;
   }
@@ -108,12 +131,23 @@ view: looker_incident {
 
   dimension: is_closed {
     type: string
-    sql: CAST(${TABLE}.IS_CLOSED AS string) ;;
+    sql: CAST(${TABLE}.IS_CLOSED as string);;
   }
 
   dimension: is_escalated {
     type: string
     sql: CAST(${TABLE}.IS_ESCALATED AS string) ;;
+  }
+
+  dimension: escalated {
+    type: yesno
+    sql: ${is_escalated} = 'true'  ;;
+    html:
+    {% if value == "Yes"  %}
+    <p style="color: black; background-color: green; font-size:100%; text-align:center">{{ value }}</p>
+    {% else %}
+    <p style="color: black; background-color: red; font-size:100%; text-align:center">{{ value }}</p>
+    {% endif %};;
   }
 
   dimension: is_nurtured {
@@ -142,6 +176,7 @@ view: looker_incident {
   }
 
   dimension: status {
+    label:"Status"
     type: string
     sql: ${TABLE}.STATUS ;;
   }
@@ -179,12 +214,24 @@ view: looker_incident {
 
   measure: count {
     type: count
-    drill_fields: [detail*]
+    drill_fields: [inc_no,channel,description,created_raw,status,closed_raw,priority]
+
   }
 
   measure: total_inc {
     type: count_distinct
+    label: "Incident"
     sql: ${inc_no} ;;
+    html: @{big_number_format} ;;
+    drill_fields: [inc_no,channel,description,created_raw,status,closed_raw,priority]
+  }
+
+  measure: total_inc_country {
+    type: count_distinct
+    label: "Incident"
+    sql: ${inc_no} ;;
+    #html: @{big_number_format} ;;
+    drill_fields: [inc_no,channel,description,created_raw,status,closed_raw,priority]
   }
 
   set: detail {
@@ -197,8 +244,8 @@ view: looker_incident {
     type:average
     sql: case when date_diff(${first_response_raw},${created_raw},MINUTE) >0 then date_diff(${first_response_raw},${created_raw},MINUTE) end  ;;
     value_format_name: decimal_0
-    label: "Avg First Response Time"
-    drill_fields: [looker_customer_care_user.country,Avg_first_response_time]
+    label: "Average First Response Time"
+    drill_fields: [country,inc_no,channel,description,created_raw,status,closed_raw,priority]
   }
 
   measure:Nurturing_Rate{
@@ -220,25 +267,65 @@ view: looker_incident {
     type: count
     value_format_name: decimal_0
     drill_fields: [looker_customer_care_user.country,escalated_case_count]
+  }
 
-  }
-  measure: open_cases_by_channel {
-    label: "Open cases by Channel"
-    type: count
-    value_format_name: decimal_0
-    drill_fields: [inc_no,is_closed,created_raw]
-  }
   measure: closed_cases_by_channel {
-    label: "Closed cases by Channel"
+    label: "Closed Cases by Channel"
     type: count
     value_format_name: decimal_0
     drill_fields: [inc_no,is_closed,created_raw]
   }
+
+  measure: open_cases_by_channel {
+    label: "Open Cases by Channel"
+    type: count
+    value_format_name: decimal_0
+    drill_fields: [inc_no,is_closed,created_raw]
+  }
+
   measure: volume_by_channel {
     label: "Volume by Channel"
     type: count
-#    sql: ${TABLE} ;;
     drill_fields: [looker_incident.channel,volume_by_channel]
+    html:
+
+    {% if value > 300  %}
+
+    <p style="color: black; background-color: green; font-size:100%; text-align:center">{{ rendered_value }}</p>
+
+    {% else %}
+
+    <p style="color: black; background-color: red; font-size:100%; text-align:center">{{ rendered_value }}</p>
+
+    {% endif %};;
+  }
+
+  measure: open_case {
+    label: "Open case"
+    type: count
+    value_format_name: decimal_0
+    drill_fields: [inc_no,is_closed,created_raw]
+
+  }
+
+  measure: avg_feedback_rating {
+    label: "Avg. Customer Rating"
+    type: average
+    value_format_name: decimal_2
+    sql: ${customer_feedback_rating} ;;
+    drill_fields: [inc_no,channel,description,created_raw,status,closed_raw,priority]
+  }
+
+  measure: open_inc {
+    label: "Open Incident"
+    type: sum
+    sql: case when ${status} not in ('Closed','Resolved') then 1 else 0 end ;;
+  }
+
+  measure: close_inc {
+    label: "Close Incident"
+    type: sum
+    sql: case when ${status} in ('Closed','Resolved') then 1 else 0 end ;;
   }
 
   dimension: Tab_links3 {
