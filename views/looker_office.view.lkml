@@ -37,4 +37,8 @@ view: looker_office {
     type: count
     drill_fields: [office_name]
   }
+  measure: total_office {
+    type: count_distinct
+    sql: ${office_id} ;;
+  }
 }

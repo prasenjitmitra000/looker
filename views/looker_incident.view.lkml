@@ -108,12 +108,12 @@ view: looker_incident {
 
   dimension: is_closed {
     type: string
-    sql: ${TABLE}.IS_CLOSED ;;
+    sql: CAST(${TABLE}.IS_CLOSED AS string) ;;
   }
 
   dimension: is_escalated {
     type: string
-    sql: ${TABLE}.IS_ESCALATED ;;
+    sql: CAST(${TABLE}.IS_ESCALATED AS string) ;;
   }
 
   dimension: is_nurtured {
@@ -166,6 +166,11 @@ view: looker_incident {
     sql: ${TABLE}.TRANSFER_REASON ;;
   }
 
+  dimension: project_name {
+    type: string
+    sql: ${TABLE}.PROJECT_NAME ;;
+  }
+
   dimension: feedback_rating_non_zero {
     type: string
     sql: case when ${customer_feedback_rating} is NOT NULL then ${customer_feedback_rating} end ;;
@@ -192,7 +197,7 @@ view: looker_incident {
     type:average
     sql: case when date_diff(${first_response_raw},${created_raw},MINUTE) >0 then date_diff(${first_response_raw},${created_raw},MINUTE) end  ;;
     value_format_name: decimal_0
-    label: "First Response Time"
+    label: "Avg First Response Time"
     drill_fields: [looker_customer_care_user.country,Avg_first_response_time]
   }
 
@@ -217,7 +222,24 @@ view: looker_incident {
     drill_fields: [looker_customer_care_user.country,escalated_case_count]
 
   }
-
+  measure: open_cases_by_channel {
+    label: "Open cases by Channel"
+    type: count
+    value_format_name: decimal_0
+    drill_fields: [inc_no,is_closed,created_raw]
+  }
+  measure: closed_cases_by_channel {
+    label: "Closed cases by Channel"
+    type: count
+    value_format_name: decimal_0
+    drill_fields: [inc_no,is_closed,created_raw]
+  }
+  measure: volume_by_channel {
+    label: "Volume by Channel"
+    type: count
+#    sql: ${TABLE} ;;
+    drill_fields: [looker_incident.channel,volume_by_channel]
+  }
 
   dimension: Tab_links3 {
     type: string

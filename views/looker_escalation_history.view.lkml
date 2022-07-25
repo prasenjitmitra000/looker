@@ -76,4 +76,8 @@ view: looker_escalation_history {
     type: count
     drill_fields: []
   }
+  measure: total_esc {
+    type: count_distinct
+    sql: ${inc_no} ;;
+  }
 }

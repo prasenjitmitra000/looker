@@ -42,4 +42,8 @@ view: looker_customer {
     type: count
     drill_fields: [name]
   }
+  measure: total_customers{
+    type: count_distinct
+    sql: ${customer_id} ;;
+  }
 }
